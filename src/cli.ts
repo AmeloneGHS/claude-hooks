@@ -41,8 +41,9 @@ program
   .addHelpText('after', `
 Examples:
   $ claude-hooks add sensitive-path-guard
-  $ claude-hooks add post-edit-lint --scope user
-  $ claude-hooks add web-budget-gate --dry-run`)
+  $ claude-hooks add security-pack
+  $ claude-hooks add cost-tracker --scope user
+  $ claude-hooks add post-edit-lint --dry-run`)
   .action(async (name: string, opts: { scope: string; dryRun?: boolean }) => {
     const { addCommand } = await import('./commands/add.js');
     await addCommand({ ...opts, hookName: name });
@@ -74,6 +75,20 @@ Examples:
   .action(async (opts: { scope: string }) => {
     const { listCommand } = await import('./commands/list.js');
     await listCommand(opts);
+  });
+
+program
+  .command('doctor')
+  .description('Validate hook installation health')
+  .option('--scope <scope>', 'Settings scope: user, project, or local', 'project')
+  .addHelpText('after', `
+Examples:
+  $ claude-hooks doctor
+  $ claude-hooks doctor --scope user
+  $ claude-hooks doctor --scope project`)
+  .action(async (opts: { scope: string }) => {
+    const { doctorCommand } = await import('./commands/doctor.js');
+    await doctorCommand(opts);
   });
 
 program.parse();

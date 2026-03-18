@@ -1,9 +1,8 @@
 import { copyFile, chmod, mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
-import { getHook } from '../registry/index.js';
+import { getHook, getPack } from '../registry/index.js';
 import { applyMerge } from '../config/manager.js';
 import { getSettingsPath, getHooksDir } from '../config/locator.js';
 import { log } from '../utils/logger.js';
@@ -108,8 +107,65 @@ export async function _addAt(opts: AddAtOptions): Promise<void> {
   }
 }
 
+export interface AddPackAtOptions {
+  settingsPath: string;
+  hooksDir: string;
+  /**
+   * Override for the source hooks directory (registry/hooks/).
+   * Used in tests to provide a fake scripts directory.
+   */
+  sourceHooksDir?: string;
+  packName: string;
+  dryRun?: boolean;
+}
+
 /**
- * Public add command — resolves paths from scope then delegates to _addAt.
+ * Install all hooks in a named pack.
+ * Delegates to _addAt for each hook, which handles deduplication.
+ */
+export async function _addPackAt(opts: AddPackAtOptions): Promise<void> {
+  const { settingsPath, hooksDir, packName, dryRun = false } = opts;
+  const sourceHooksDir = opts.sourceHooksDir ?? getDefaultSourceHooksDir();
+
+  const pack = getPack(packName);
+  if (!pack) {
+    log.error(`Unknown hook or pack: "${packName}". Run "claude-hooks list" to see available options.`);
+    return;
+  }
+
+  log.info(`Installing ${packName} (${pack.hooks.length} hooks)...`);
+
+  const installed: string[] = [];
+  const skipped: string[] = [];
+
+  for (const hookName of pack.hooks) {
+    const hook = getHook(hookName);
+    if (!hook) {
+      log.warn(`Pack "${packName}" references unknown hook "${hookName}" — skipping.`);
+      continue;
+    }
+
+    if (dryRun) {
+      const srcPath = join(sourceHooksDir, hook.scriptFile);
+      const destPath = join(hooksDir, hook.scriptFile);
+      log.dryRun(`Would install hook: ${hookName}`);
+      log.dryRun(`  ${srcPath} -> ${destPath}`);
+      installed.push(hookName);
+      continue;
+    }
+
+    // Capture console output to detect skip (workaround: call _addAt and check result via applyMerge)
+    await _addAt({ settingsPath, hooksDir, sourceHooksDir, hookName, dryRun });
+    installed.push(hookName);
+  }
+
+  if (!dryRun) {
+    log.success(`Installed ${packName} (${installed.length} hooks): ${installed.join(', ')}`);
+  }
+}
+
+/**
+ * Public add command — resolves paths from scope then delegates to _addAt or _addPackAt.
  */
 export async function addCommand(opts: AddOptions): Promise<void> {
   const validScopes: Scope[] = ['user', 'project', 'local'];
@@ -117,10 +173,31 @@ export async function addCommand(opts: AddOptions): Promise<void> {
     ? (opts.scope as Scope)
     : 'project';
 
-  await _addAt({
-    settingsPath: getSettingsPath(scope),
-    hooksDir: getHooksDir(scope),
-    hookName: opts.hookName,
-    dryRun: opts.dryRun,
-  });
+  const settingsPath = getSettingsPath(scope);
+  const hooksDir = getHooksDir(scope);
+
+  // Check if it's a pack first
+  if (getPack(opts.hookName)) {
+    await _addPackAt({
+      settingsPath,
+      hooksDir,
+      packName: opts.hookName,
+      dryRun: opts.dryRun,
+    });
+    return;
+  }
+
+  // Check if it's a known hook
+  if (getHook(opts.hookName)) {
+    await _addAt({
+      settingsPath,
+      hooksDir,
+      hookName: opts.hookName,
+      dryRun: opts.dryRun,
+    });
+    return;
+  }
+
+  // Neither hook nor pack
+  log.error(`Unknown hook or pack: "${opts.hookName}". Run "claude-hooks list" to see available options.`);
 }

@@ -3,6 +3,7 @@ import pc from 'picocolors';
 import { readSettings } from '../config/manager.js';
 import { getSettingsPath, getHooksDir } from '../config/locator.js';
 import type { Scope } from '../config/locator.js';
+import type { ClaudeSettings, HookGroup } from '../types/settings.js';
 
 export interface DoctorCheck {
   level: 'pass' | 'fail' | 'warn';
@@ -23,6 +24,25 @@ export interface DoctorAtOptions {
 }
 
 /**
+ * Extract all command strings from the hooks section of settings.
+ */
+function extractCommands(hooks: Record<string, HookGroup[]>): Array<{ event: string; matcher?: string; command: string }> {
+  const result: Array<{ event: string; matcher?: string; command: string }> = [];
+  for (const [event, groups] of Object.entries(hooks)) {
+    if (!Array.isArray(groups)) continue;
+    for (const group of groups) {
+      if (!group.hooks || !Array.isArray(group.hooks)) continue;
+      for (const entry of group.hooks) {
+        if (entry.type === 'command' && entry.command) {
+          result.push({ event, matcher: group.matcher, command: entry.command });
+        }
+      }
+    }
+  }
+  return result;
+}
+
+/**
  * Core doctor logic. Accepts explicit paths for testability.
  *
  * Runs 5 checks:
@@ -37,14 +57,13 @@ export async function _doctorAt(opts: DoctorAtOptions): Promise<DoctorResult> {
   const checks: DoctorCheck[] = [];
 
   // ── Check 1: Settings file exists and is valid JSON ──────────────────────
-  let settings: { hooks?: Record<string, Array<{ matcher?: string; hooks: Array<{ type: string; command: string }> }>> } | null = null;
+  let settings: ClaudeSettings | undefined;
 
   if (!existsSync(settingsPath)) {
     checks.push({ level: 'warn', message: `Settings file not found: ${settingsPath}` });
   } else {
     try {
-      const raw = await readSettings(settingsPath);
-      settings = raw as typeof settings;
+      settings = await readSettings(settingsPath);
       checks.push({ level: 'pass', message: 'Settings file valid' });
     } catch {
       checks.push({ level: 'fail', message: `Settings file parse error: malformed JSON at ${settingsPath}` });
@@ -58,88 +77,59 @@ export async function _doctorAt(opts: DoctorAtOptions): Promise<DoctorResult> {
     checks.push({ level: 'pass', message: 'Hooks directory exists' });
   }
 
-  // ── Checks 3 & 4: Installed scripts exist and are executable (+ orphan detection) ──
-  if (settings !== null && settings.hooks) {
-    const allCommands: string[] = [];
+  // ── Checks 3 & 4: Installed scripts exist and are executable ─────────────
+  if (settings !== undefined) {
+    const hookDefs = settings.hooks as Record<string, HookGroup[]> | undefined;
+    const allEntries = hookDefs ? extractCommands(hookDefs) : [];
 
-    for (const [_event, groups] of Object.entries(settings.hooks)) {
-      if (!Array.isArray(groups)) continue;
-      for (const group of groups) {
-        if (!group.hooks || !Array.isArray(group.hooks)) continue;
-        for (const entry of group.hooks) {
-          if (entry.type === 'command' && entry.command) {
-            allCommands.push(entry.command);
-          }
-        }
-      }
-    }
-
-    if (allCommands.length === 0) {
+    if (allEntries.length === 0) {
       checks.push({ level: 'pass', message: 'No hook scripts to validate' });
     } else {
-      let anyScriptIssue = false;
-      for (const scriptPath of allCommands) {
+      for (const { command: scriptPath } of allEntries) {
         if (!existsSync(scriptPath)) {
           checks.push({ level: 'fail', message: `Script not found: ${scriptPath}` });
-          anyScriptIssue = true;
         } else {
           try {
             accessSync(scriptPath, constants.X_OK);
             checks.push({ level: 'pass', message: `Script OK: ${scriptPath}` });
           } catch {
             checks.push({ level: 'fail', message: `Script not executable: ${scriptPath}` });
-            anyScriptIssue = true;
           }
         }
       }
-      if (!anyScriptIssue) {
-        // Already added per-script pass checks above
-      }
     }
-  } else if (settings !== null) {
-    // Settings parsed but no hooks — clean state
-    checks.push({ level: 'pass', message: 'No hook scripts to validate' });
-  }
 
-  // ── Check 5: No conflicting hooks (same event+matcher, different commands) ──
-  if (settings !== null && settings.hooks) {
-    // Map from "event::matcher" -> set of commands
-    const tupleMap = new Map<string, Set<string>>();
+    // ── Check 5: No conflicting hooks (same event+matcher, different commands) ──
+    if (hookDefs) {
+      const tupleMap = new Map<string, Set<string>>();
 
-    for (const [event, groups] of Object.entries(settings.hooks)) {
-      if (!Array.isArray(groups)) continue;
-      for (const group of groups) {
-        const matcher = group.matcher ?? '__none__';
-        const key = `${event}::${matcher}`;
+      for (const { event, matcher, command } of allEntries) {
+        const key = `${event}::${matcher ?? '__none__'}`;
         if (!tupleMap.has(key)) {
           tupleMap.set(key, new Set());
         }
-        if (group.hooks && Array.isArray(group.hooks)) {
-          for (const entry of group.hooks) {
-            if (entry.type === 'command' && entry.command) {
-              tupleMap.get(key)!.add(entry.command);
-            }
-          }
+        tupleMap.get(key)!.add(command);
+      }
+
+      let conflictFound = false;
+      for (const [key, commands] of tupleMap.entries()) {
+        if (commands.size > 1) {
+          const parts = key.split('::');
+          const event = parts[0];
+          const matcher = parts[1];
+          const label = matcher === '__none__' ? event : `${event}/${matcher}`;
+          checks.push({
+            level: 'warn',
+            message: `Conflicting hooks: ${label} has ${commands.size} commands`,
+          });
+          conflictFound = true;
         }
       }
-    }
 
-    let conflictFound = false;
-    for (const [key, commands] of tupleMap.entries()) {
-      if (commands.size > 1) {
-        const [event, matcher] = key.split('::');
-        const label = matcher === '__none__' ? event : `${event}/${matcher}`;
-        checks.push({
-          level: 'warn',
-          message: `Conflicting hooks: ${label} has ${commands.size} commands`,
-        });
-        conflictFound = true;
+      if (!conflictFound) {
+        checks.push({ level: 'pass', message: 'No conflicting hooks' });
       }
-    }
-
-    if (!conflictFound && settings.hooks && Object.keys(settings.hooks).length > 0) {
-      checks.push({ level: 'pass', message: 'No conflicting hooks' });
-    } else if (!conflictFound) {
+    } else {
       checks.push({ level: 'pass', message: 'No conflicting hooks' });
     }
   }
