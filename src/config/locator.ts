@@ -1,32 +1,28 @@
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 
 export type Scope = 'user' | 'project' | 'local';
 
 /**
- * Walk up from cwd looking for .git or .claude directory to find the project root.
- * Falls back to cwd if neither is found, matching eslint/prettier behavior.
- * (Pitfall 5: project scope path resolution)
+ * Walk up from cwd looking for .git to find the project root.
+ * Only checks .git (not .claude) to avoid resolving to ~/.claude on machines
+ * that have user-scope Claude config. Falls back to cwd if no .git found.
  */
 function findProjectRoot(): string {
-  let dir = process.cwd();
-  const root = parse(dir).root;
+  let dir = resolve(process.cwd());
 
-  while (dir !== root) {
-    if (existsSync(join(dir, '.git')) || existsSync(join(dir, '.claude'))) {
+  while (true) {
+    if (existsSync(join(dir, '.git'))) {
       return dir;
     }
-    const parent = join(dir, '..');
-    if (parent === dir) break;
+    const parent = dirname(dir);
+    if (parent === dir) break; // reached filesystem root
     dir = parent;
   }
 
   return process.cwd();
 }
-
-// Import parse from path to handle root detection cross-platform
-import { parse } from 'node:path';
 
 /**
  * Resolve the settings.json path for the given scope.

@@ -22,13 +22,19 @@ function detectIndent(raw: string): string | number {
 /**
  * Read and parse settings.json from the given path.
  * Returns an empty object if the file does not exist.
+ * Throws on malformed JSON or permission errors to prevent silent overwrites.
  */
 export async function readSettings(path: string): Promise<ClaudeSettings> {
   try {
     const raw = await readFile(path, 'utf8');
     return JSON.parse(raw) as ClaudeSettings;
-  } catch {
-    return {};
+  } catch (err: unknown) {
+    // File not found is expected — return empty settings
+    if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'ENOENT') {
+      return {};
+    }
+    // Any other error (malformed JSON, permission denied) should propagate
+    throw err;
   }
 }
 
@@ -77,9 +83,13 @@ export async function applyMerge(opts: ApplyMergeOptions): Promise<MergeResult> 
   try {
     originalRaw = await readFile(settingsPath, 'utf8');
     existing = JSON.parse(originalRaw) as ClaudeSettings;
-  } catch {
-    existing = {};
-    originalRaw = undefined;
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'ENOENT') {
+      existing = {};
+      originalRaw = undefined;
+    } else {
+      throw err;
+    }
   }
 
   // 2. Pure merge
