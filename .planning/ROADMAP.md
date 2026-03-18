@@ -27,7 +27,7 @@ claude-hooks goes from zero to publishable npm package in 4 phases. The settings
   3. User can pass `--dry-run` on init to preview changes without writing anything
   4. Settings.json is automatically backed up before any write, and `claude-hooks restore` reverts to the last backup
   5. Registry data model exists with metadata (name, description, event type, matcher) for all planned hooks
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 01-01: TypeScript project scaffold, Commander.js CLI skeleton, types and schemas
@@ -44,7 +44,7 @@ Plans:
   3. User can run `claude-hooks remove <hook>` and both the script and settings.json entry are cleanly removed
   4. User can run `claude-hooks list` and see all available hooks with installed status and event types
   5. User can run `claude-hooks doctor` and get a health report (scripts exist, are executable, settings.json valid, no conflicts)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 02-01: add, remove, list commands with settings integration
@@ -61,7 +61,7 @@ Plans:
   3. Each bundled hook ships with test fixtures that validate automatically
   4. User can run `claude-hooks create my-hook --event PreToolUse --matcher Bash` and get a working hook script with test fixture
   5. User-created hooks with test fixtures in the expected location are auto-discovered by the test command
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 03-01: Test runner engine (mock JSON stdin, exit code capture, colored output, fixture discovery)
@@ -75,7 +75,7 @@ Plans:
   1. README has quick start (init + add security-pack), full command reference, and real examples
   2. User can run `claude-hooks info <hook>` and see description with real input/output JSON examples
   3. Every bundled hook script has inline comments explaining what it does, what it blocks, and why
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 04-01: README, info command, inline hook documentation
