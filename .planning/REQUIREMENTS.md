@@ -12,8 +12,8 @@
 - [x] **CLI-03**: User can run `claude-hooks add <pack>` to install a pack of related hooks in one command
 - [x] **CLI-04**: User can run `claude-hooks remove <hook>` to cleanly uninstall a hook (script + settings.json entry)
 - [x] **CLI-05**: User can run `claude-hooks list` to see available hooks, installed status, and event types
-- [ ] **CLI-06**: User can run `claude-hooks test <hook>` to validate a hook with mock JSON input and verify exit code + output
-- [ ] **CLI-07**: User can run `claude-hooks test --all` to test all installed hooks
+- [x] **CLI-06**: User can run `claude-hooks test <hook>` to validate a hook with mock JSON input and verify exit code + output
+- [x] **CLI-07**: User can run `claude-hooks test --all` to test all installed hooks
 - [x] **CLI-08**: User can run `claude-hooks create <name> --event <type> --matcher <pattern>` to scaffold a custom hook from templates
 - [x] **CLI-09**: User can run `claude-hooks doctor` to validate installation health (scripts exist, executable, settings.json valid)
 - [x] **CLI-10**: Every command supports `--help` with clear usage examples
@@ -40,10 +40,10 @@
 
 ### Testing Framework
 
-- [ ] **TST-01**: Test runner feeds mock tool JSON (stdin) to hook scripts and captures exit code + stdout
-- [ ] **TST-02**: Each bundled hook ships with test fixtures (input JSON + expected outcome)
-- [ ] **TST-03**: Test output clearly shows pass/fail per hook with colored output
-- [ ] **TST-04**: User-created hooks can include test fixtures that `test` command discovers automatically
+- [x] **TST-01**: Test runner feeds mock tool JSON (stdin) to hook scripts and captures exit code + stdout
+- [x] **TST-02**: Each bundled hook ships with test fixtures (input JSON + expected outcome)
+- [x] **TST-03**: Test output clearly shows pass/fail per hook with colored output
+- [x] **TST-04**: User-created hooks can include test fixtures that `test` command discovers automatically
 
 ### Hook Scaffolding
 
@@ -94,8 +94,8 @@
 | CLI-03 | Phase 2 | Complete |
 | CLI-04 | Phase 2 | Complete |
 | CLI-05 | Phase 2 | Complete |
-| CLI-06 | Phase 3 | Pending |
-| CLI-07 | Phase 3 | Pending |
+| CLI-06 | Phase 3 | Complete |
+| CLI-07 | Phase 3 | Complete |
 | CLI-08 | Phase 3 | Complete |
 | CLI-09 | Phase 2 | Complete |
 | CLI-10 | Phase 2 | Complete |
@@ -113,10 +113,10 @@
 | REG-06 | Phase 2 | Complete |
 | REG-07 | Phase 2 | Complete |
 | REG-08 | Phase 2 | Complete |
-| TST-01 | Phase 3 | Pending |
-| TST-02 | Phase 3 | Pending |
-| TST-03 | Phase 3 | Pending |
-| TST-04 | Phase 3 | Pending |
+| TST-01 | Phase 3 | Complete |
+| TST-02 | Phase 3 | Complete |
+| TST-03 | Phase 3 | Complete |
+| TST-04 | Phase 3 | Complete |
 | SCF-01 | Phase 3 | Complete |
 | SCF-02 | Phase 3 | Complete |
 | SCF-03 | Phase 3 | Complete |
