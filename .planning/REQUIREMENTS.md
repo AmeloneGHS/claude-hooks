@@ -14,7 +14,7 @@
 - [x] **CLI-05**: User can run `claude-hooks list` to see available hooks, installed status, and event types
 - [ ] **CLI-06**: User can run `claude-hooks test <hook>` to validate a hook with mock JSON input and verify exit code + output
 - [ ] **CLI-07**: User can run `claude-hooks test --all` to test all installed hooks
-- [ ] **CLI-08**: User can run `claude-hooks create <name> --event <type> --matcher <pattern>` to scaffold a custom hook from templates
+- [x] **CLI-08**: User can run `claude-hooks create <name> --event <type> --matcher <pattern>` to scaffold a custom hook from templates
 - [x] **CLI-09**: User can run `claude-hooks doctor` to validate installation health (scripts exist, executable, settings.json valid)
 - [x] **CLI-10**: Every command supports `--help` with clear usage examples
 
@@ -47,9 +47,9 @@
 
 ### Hook Scaffolding
 
-- [ ] **SCF-01**: `create` generates a working hook script with proper shebang, stdin JSON parsing, and exit code handling
-- [ ] **SCF-02**: `create` generates a test fixture skeleton alongside the hook script
-- [ ] **SCF-03**: Templates exist for each supported event type (PreToolUse, PostToolUse, SessionStart, Stop)
+- [x] **SCF-01**: `create` generates a working hook script with proper shebang, stdin JSON parsing, and exit code handling
+- [x] **SCF-02**: `create` generates a test fixture skeleton alongside the hook script
+- [x] **SCF-03**: Templates exist for each supported event type (PreToolUse, PostToolUse, SessionStart, Stop)
 
 ### Documentation
 
@@ -96,7 +96,7 @@
 | CLI-05 | Phase 2 | Complete |
 | CLI-06 | Phase 3 | Pending |
 | CLI-07 | Phase 3 | Pending |
-| CLI-08 | Phase 3 | Pending |
+| CLI-08 | Phase 3 | Complete |
 | CLI-09 | Phase 2 | Complete |
 | CLI-10 | Phase 2 | Complete |
 | SET-01 | Phase 1 | Complete |
@@ -117,9 +117,9 @@
 | TST-02 | Phase 3 | Pending |
 | TST-03 | Phase 3 | Pending |
 | TST-04 | Phase 3 | Pending |
-| SCF-01 | Phase 3 | Pending |
-| SCF-02 | Phase 3 | Pending |
-| SCF-03 | Phase 3 | Pending |
+| SCF-01 | Phase 3 | Complete |
+| SCF-02 | Phase 3 | Complete |
+| SCF-03 | Phase 3 | Complete |
 | DOC-01 | Phase 4 | Pending |
 | DOC-02 | Phase 4 | Pending |
 | DOC-03 | Phase 4 | Pending |
