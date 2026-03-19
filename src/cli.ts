@@ -3,7 +3,7 @@ import { Command } from 'commander';
 const program = new Command()
   .name('claude-hooks')
   .description('Hook manager for Claude Code — install, manage, test, and share hooks')
-  .version('0.1.0');
+  .version('1.0.0');
 
 program
   .command('init')

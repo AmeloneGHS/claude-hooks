@@ -23,12 +23,14 @@ export interface RemoveAtOptions {
 }
 
 /**
- * Remove hook groups that reference the given scriptFile from a settings object.
+ * Remove hook entries that reference the given exact script path from a settings object.
+ * Only removes entries whose command matches the exact path — won't touch unrelated
+ * hooks that happen to share a filename.
  * Returns the modified settings and a count of removed entries.
  */
 function removeHookFromSettings(
   settings: ClaudeSettings,
-  scriptFile: string,
+  exactScriptPath: string,
 ): { settings: ClaudeSettings; removedCount: number } {
   if (!settings.hooks) {
     return { settings, removedCount: 0 };
@@ -40,9 +42,9 @@ function removeHookFromSettings(
   for (const [event, groups] of Object.entries(modified.hooks!)) {
     const filtered: HookGroup[] = [];
     for (const group of groups as HookGroup[]) {
-      // Filter out only the specific command entries that match, keep the rest
+      // Filter out only commands that exactly match the installed path
       const remainingHooks = group.hooks.filter((h) => {
-        const matches = h.command === scriptFile || h.command.endsWith('/' + scriptFile);
+        const matches = h.command === exactScriptPath;
         if (matches) removedCount++;
         return !matches;
       });
@@ -84,8 +86,9 @@ export async function _removeAt(opts: RemoveAtOptions): Promise<void> {
   const scriptExists = existsSync(scriptPath);
 
   // Check if anything is installed (script or settings entry)
+  // Pass the exact installed path so we only remove entries for THIS scope's install
   const existing = await readSettings(settingsPath);
-  const { settings: updated, removedCount } = removeHookFromSettings(existing, hook.scriptFile);
+  const { settings: updated, removedCount } = removeHookFromSettings(existing, scriptPath);
 
   if (!scriptExists && removedCount === 0) {
     log.warn(`Hook "${hookName}" is not installed.`);

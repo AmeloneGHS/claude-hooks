@@ -80,33 +80,25 @@ export async function _addAt(opts: AddAtOptions): Promise<void> {
     return;
   }
 
-  // 3. Ensure hooksDir exists
+  // 3. Check if already installed (merge first to detect duplicate, don't copy yet)
   await mkdir(hooksDir, { recursive: true });
 
-  // 4. Copy script
-  await copyFile(srcPath, destPath);
+  const result = await applyMerge({
+    settingsPath,
+    newHooks: [
+      {
+        event: hook.event,
+        matcher: hook.matcher,
+        hook: { type: 'command', command: destPath },
+      },
+    ],
+    dryRun: false,
+  });
 
-  // 5. chmod +x
-  await chmod(destPath, 0o755);
-
-  // 6. Merge into settings.json — clean up copied script if merge fails
-  let result;
-  try {
-    result = await applyMerge({
-      settingsPath,
-      newHooks: [
-        {
-          event: hook.event,
-          matcher: hook.matcher,
-          hook: { type: 'command', command: destPath },
-        },
-      ],
-      dryRun: false,
-    });
-  } catch (err) {
-    // Roll back the copied script to avoid orphaned files
-    await unlink(destPath).catch(() => {});
-    throw err;
+  // 4. Only copy script if the settings entry was actually added (not a duplicate)
+  if (result.added.length > 0) {
+    await copyFile(srcPath, destPath);
+    await chmod(destPath, 0o755);
   }
 
   // 7. Print summary

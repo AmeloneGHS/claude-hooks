@@ -216,20 +216,23 @@ export async function testCommand(opts: TestCommandOpts): Promise<TestSummary> {
   const allResults: TestResult[] = [];
 
   if (opts.all) {
-    // Test all bundled hooks + any user-created hooks with fixtures
+    // Test only hooks that are actually installed (have scripts in hooks dir) + custom hooks
+    const userHooksDir = getHooksDir(scope as 'user' | 'project' | 'local');
     const bundledHooks = listHooks();
     const testedNames = new Set<string>();
 
-    // 1. All bundled hooks
+    // 1. Bundled hooks that are installed (script exists in hooks dir)
     for (const def of bundledHooks) {
-      console.log(pc.bold(`\n${def.name}`));
-      const results = await testHook(def.name, scope);
-      allResults.push(...results);
-      testedNames.add(def.name);
+      const installedScript = join(userHooksDir, def.scriptFile);
+      if (existsSync(installedScript)) {
+        console.log(pc.bold(`\n${def.name}`));
+        const results = await testHook(def.name, scope);
+        allResults.push(...results);
+        testedNames.add(def.name);
+      }
     }
 
     // 2. User-created hooks with fixtures (discovered from .claude/hooks/fixtures/)
-    const userHooksDir = getHooksDir(scope as 'user' | 'project' | 'local');
     const userFixturesRoot = join(userHooksDir, 'fixtures');
     if (existsSync(userFixturesRoot)) {
       try {
@@ -247,6 +250,10 @@ export async function testCommand(opts: TestCommandOpts): Promise<TestSummary> {
       } catch {
         // fixtures dir unreadable — skip custom hooks
       }
+    }
+
+    if (testedNames.size === 0 && allResults.length === 0) {
+      console.log(pc.yellow('\nNo installed hooks found. Run `claude-hooks add <hook>` first.'));
     }
   } else if (opts.hookName) {
     console.log(pc.bold(`\n${opts.hookName}`));
