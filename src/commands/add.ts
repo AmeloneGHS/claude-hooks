@@ -1,5 +1,6 @@
 import { copyFile, chmod, mkdir, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { getHook, getPack } from '../registry/index.js';
@@ -28,14 +29,21 @@ export interface AddAtOptions {
 }
 
 /**
- * Resolve the bundled registry/hooks/ directory from this file's location.
- * Works for both src/ (vitest) and dist/ (built output).
+ * Resolve the bundled registry/hooks/ directory by walking up from this file.
+ * Handles both src/commands/ (dev) and dist/ (built/installed) layouts.
  */
 function getDefaultSourceHooksDir(): string {
   const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  // src/commands/ -> ../../registry/hooks
-  return join(__dirname, '..', '..', 'registry', 'hooks');
+  let dir = dirname(__filename);
+  for (let i = 0; i < 5; i++) {
+    const candidate = join(dir, 'registry', 'hooks');
+    if (existsSync(candidate)) return candidate;
+    const parent = resolve(dir, '..');
+    if (parent === dir) break;
+    dir = parent;
+  }
+  // Fallback
+  return join(dirname(__filename), '..', '..', 'registry', 'hooks');
 }
 
 /**

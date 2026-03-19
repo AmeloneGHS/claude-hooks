@@ -1,6 +1,6 @@
 {
   "name": "claude-hooks",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Hook manager for Claude Code — install, manage, test, and share hooks with a single command",
   "type": "module",
   "bin": {
@@ -8,7 +8,6 @@
   },
   "files": [
     "dist",
-    "hooks",
     "registry"
   ],
   "engines": {
@@ -20,7 +19,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run typecheck && npm run test"
+  },
+  "author": "Austin Amelone",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmeloneGHS/claude-hooks.git"
+  },
+  "homepage": "https://github.com/AmeloneGHS/claude-hooks#readme",
+  "bugs": {
+    "url": "https://github.com/AmeloneGHS/claude-hooks/issues"
   },
   "dependencies": {
     "commander": "^14.0.0",
@@ -43,7 +51,9 @@
     "automation",
     "hook-manager",
     "llm-tools",
-    "ai-safety"
+    "ai-safety",
+    "code-quality",
+    "security"
   ],
   "license": "MIT"
 }

@@ -7,10 +7,23 @@ import pc from 'picocolors';
 import { getHook, listHooks } from '../registry/index.js';
 import { getHooksDir } from '../config/locator.js';
 
-// Resolve the package root (two levels up from src/commands/)
+// Resolve the package root by walking up from __dirname until registry/hooks/fixtures exists.
+// Handles both src/commands/ (dev) and dist/ (built/installed) layouts.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PACKAGE_ROOT = resolve(__dirname, '..', '..');
+
+function findPackageRoot(): string {
+  let dir = __dirname;
+  for (let i = 0; i < 5; i++) {
+    if (existsSync(join(dir, 'registry', 'hooks', 'fixtures'))) return dir;
+    const parent = resolve(dir, '..');
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return resolve(__dirname, '..', '..');
+}
+
+const PACKAGE_ROOT = findPackageRoot();
 const BUNDLED_HOOKS_DIR = join(PACKAGE_ROOT, 'registry', 'hooks');
 const BUNDLED_FIXTURES_DIR = join(PACKAGE_ROOT, 'registry', 'hooks', 'fixtures');
 

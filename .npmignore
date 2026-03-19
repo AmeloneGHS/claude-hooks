@@ -1,0 +1,17 @@
+# Source & config (dist/ ships instead)
+src/
+tests/
+tsconfig.json
+tsconfig.test.json
+tsup.config.ts
+vitest.config.ts
+
+# Planning artifacts
+.planning/
+
+# Dev files
+.git/
+.gitignore
+.DS_Store
+*.log
+*.backup
