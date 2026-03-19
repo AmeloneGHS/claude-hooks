@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-19T00:07:34.988Z"
+stopped_at: "Completed 04-01: Documentation & Polish"
+last_updated: "2026-03-19T00:13:43.554Z"
 last_activity: 2026-03-18 — Plan 01-03 complete (registry manifest, lookup functions, init command)
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 8
-  completed_plans: 8
+  completed_plans: 9
   percent: 75
 ---
 
@@ -56,6 +56,7 @@ Progress: [██████░░░░] 75%
 | Phase 02 P02 | 462 | 2 tasks | 8 files |
 | Phase 02-cli-commands-hook-registry P03 | 15 | 2 tasks | 5 files |
 | Phase 03-testing-scaffolding P01 | 168 | 2 tasks | 17 files |
+| Phase 04 P01 | 12m | 4 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 03-testing-scaffolding]: Template comments use 'pure bash, no external JSON parser required' to avoid false-positive test failures
 - [Phase 03-testing-scaffolding]: _createAt() exports explicit hooksDir for testability without real filesystem side effects
 - [Phase 03-01]: web-budget-gate block fixture uses CLAUDE_HOOKS_WEB_LIMIT=0 so first call is immediately blocked without state pre-seeding
+- [Phase 04]: Walk-up path resolution for registry and fixtures — handles both src/ and dist/ layouts
+- [Phase 04]: info command uses bundled fixture files to show real input/output examples
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T00:07:34.986Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-19T00:13:43.551Z
+Stopped at: Completed 04-01: Documentation & Polish
 Resume file: None

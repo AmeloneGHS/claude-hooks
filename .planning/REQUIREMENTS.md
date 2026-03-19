@@ -53,9 +53,9 @@
 
 ### Documentation
 
-- [ ] **DOC-01**: README with quick start, all commands, and examples
-- [ ] **DOC-02**: `claude-hooks info <hook>` shows hook description with real input/output JSON examples
-- [ ] **DOC-03**: Each bundled hook has inline documentation (comments in script)
+- [x] **DOC-01**: README with quick start, all commands, and examples
+- [x] **DOC-02**: `claude-hooks info <hook>` shows hook description with real input/output JSON examples
+- [x] **DOC-03**: Each bundled hook has inline documentation (comments in script)
 
 ## v2 Requirements
 
@@ -120,9 +120,9 @@
 | SCF-01 | Phase 3 | Complete |
 | SCF-02 | Phase 3 | Complete |
 | SCF-03 | Phase 3 | Complete |
-| DOC-01 | Phase 4 | Pending |
-| DOC-02 | Phase 4 | Pending |
-| DOC-03 | Phase 4 | Pending |
+| DOC-01 | Phase 4 | Complete |
+| DOC-02 | Phase 4 | Complete |
+| DOC-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 34 total
