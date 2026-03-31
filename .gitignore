@@ -3,3 +3,4 @@ dist/
 *.backup
 .DS_Store
 *.log
+drafts/
