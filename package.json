@@ -1,6 +1,6 @@
 {
   "name": "claude-code-hookkit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hook manager for Claude Code — install, manage, test, and share hooks with a single command",
   "type": "module",
   "bin": {
